@@ -5,3 +5,6 @@ edition = "2021"
 
 [dependencies]
 quick-xml = "0.34.0"
+
+[dev-dependencies]
+assert_cmd = "2.0.8"
