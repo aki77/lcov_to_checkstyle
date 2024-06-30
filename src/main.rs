@@ -1,18 +1,16 @@
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use quick_xml::Writer;
 use std::collections::BTreeMap;
-use std::env;
-use std::fs::File;
-use std::io::{BufRead, BufReader, Result};
+use std::io::{BufRead, BufReader, Read, Result};
+use std::{env, io};
 
 struct LcovRecord {
     lines: Vec<u32>,
     branches: BTreeMap<u32, Vec<(u32, u32, i32)>>,
 }
 
-fn parse_lcov(file_path: &str) -> Result<BTreeMap<String, LcovRecord>> {
-    let file = File::open(file_path)?;
-    let reader = BufReader::new(file);
+fn parse_lcov(data: &str) -> Result<BTreeMap<String, LcovRecord>> {
+    let reader = BufReader::new(data.as_bytes());
     let mut uncovered_files: BTreeMap<String, LcovRecord> = BTreeMap::new();
     let mut current_file = None;
 
@@ -151,13 +149,16 @@ fn convert_to_checkstyle_format(uncovered_files: BTreeMap<String, LcovRecord>) -
 
 fn main() -> Result<()> {
     let args: Vec<String> = env::args().collect();
-    if args.len() != 2 {
-        eprintln!("Usage: {} <path_to_lcov.info>", args[0]);
-        std::process::exit(1);
-    }
+    let uncovered_files = if args.len() > 1 {
+        let lcov_file_path = &args[1];
+        let data = std::fs::read_to_string(lcov_file_path)?;
+        parse_lcov(&data)?
+    } else {
+        let mut data = String::new();
+        io::stdin().read_to_string(&mut data)?;
+        parse_lcov(&data)?
+    };
 
-    let lcov_file_path = &args[1];
-    let uncovered_files = parse_lcov(lcov_file_path)?;
     let checkstyle_output = convert_to_checkstyle_format(uncovered_files);
     println!("{}", String::from_utf8(checkstyle_output).unwrap());
 
