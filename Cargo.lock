@@ -3,11 +3,62 @@
 version = 3
 
 [[package]]
+name = "anstyle"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "038dfcf04a5feb68e9c60b21c9625a54c2c0616e79b72b0fd87075a056ae1d1b"
+
+[[package]]
+name = "assert_cmd"
+version = "2.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed72493ac66d5804837f480ab3766c72bdfab91a65e565fc54fa9e42db0073a8"
+dependencies = [
+ "anstyle",
+ "bstr",
+ "doc-comment",
+ "predicates",
+ "predicates-core",
+ "predicates-tree",
+ "wait-timeout",
+]
+
+[[package]]
+name = "bstr"
+version = "1.9.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "05efc5cfd9110c8416e471df0e96702d58690178e206e61b7173706673c93706"
+dependencies = [
+ "memchr",
+ "regex-automata",
+ "serde",
+]
+
+[[package]]
+name = "difflib"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6184e33543162437515c2e2b48714794e37845ec9851711914eec9d308f6ebe8"
+
+[[package]]
+name = "doc-comment"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fea41bba32d969b513997752735605054bc0dfa92b4c56bf1189f2e174be7a10"
+
+[[package]]
 name = "lcov_to_checkstyle"
 version = "0.1.0"
 dependencies = [
+ "assert_cmd",
  "quick-xml",
 ]
+
+[[package]]
+name = "libc"
+version = "0.2.155"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97b3888a4aecf77e811145cadf6eef5901f4782c53886191b2f693f24761847c"
 
 [[package]]
 name = "memchr"
@@ -16,10 +67,113 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
+name = "predicates"
+version = "3.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68b87bfd4605926cdfefc1c3b5f8fe560e3feca9d5552cf68c466d3d8236c7e8"
+dependencies = [
+ "anstyle",
+ "difflib",
+ "predicates-core",
+]
+
+[[package]]
+name = "predicates-core"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b794032607612e7abeb4db69adb4e33590fa6cf1149e95fd7cb00e634b92f174"
+
+[[package]]
+name = "predicates-tree"
+version = "1.0.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "368ba315fb8c5052ab692e68a0eefec6ec57b23a36959c14496f0b0df2c0cecf"
+dependencies = [
+ "predicates-core",
+ "termtree",
+]
+
+[[package]]
+name = "proc-macro2"
+version = "1.0.86"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5e719e8df665df0d1c8fbfd238015744736151d4445ec0836b8e628aae103b77"
+dependencies = [
+ "unicode-ident",
+]
+
+[[package]]
 name = "quick-xml"
 version = "0.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f24d770aeca0eacb81ac29dfbc55ebcc09312fdd1f8bbecdc7e4a84e000e3b4"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "quote"
+version = "1.0.36"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fa76aaf39101c457836aec0ce2316dbdc3ab723cdda1c6bd4e6ad4208acaca7"
+dependencies = [
+ "proc-macro2",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.4.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38caf58cc5ef2fed281f89292ef23f6365465ed9a41b7a7754eb4e26496c92df"
+
+[[package]]
+name = "serde"
+version = "1.0.203"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7253ab4de971e72fb7be983802300c30b5a7f0c2e56fab8abfc6a214307c0094"
+dependencies = [
+ "serde_derive",
+]
+
+[[package]]
+name = "serde_derive"
+version = "1.0.203"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "500cbc0ebeb6f46627f50f3f5811ccf6bf00643be300b4c3eabc0ef55dc5b5ba"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "syn"
+version = "2.0.68"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "901fa70d88b9d6c98022e23b4136f9f3e54e4662c3bc1bd1d84a42a9a0f0c1e9"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
+name = "termtree"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3369f5ac52d5eb6ab48c6b4ffdc8efbcad6b89c765749064ba298f2c68a16a76"
+
+[[package]]
+name = "unicode-ident"
+version = "1.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3354b9ac3fae1ff6755cb6db53683adb661634f67557942dea4facebec0fee4b"
+
+[[package]]
+name = "wait-timeout"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f200f5b12eb75f8c1ed65abd4b2db8a6e1b138a20de009dacee265a2498f3f6"
+dependencies = [
+ "libc",
 ]

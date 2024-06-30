@@ -1,14 +1,14 @@
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use quick_xml::Writer;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 
-fn parse_lcov(file_path: &str) -> Result<HashMap<String, Vec<u32>>> {
+fn parse_lcov(file_path: &str) -> Result<BTreeMap<String, Vec<u32>>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
-    let mut uncovered_files: HashMap<String, Vec<u32>> = HashMap::new();
+    let mut uncovered_files: BTreeMap<String, Vec<u32>> = BTreeMap::new();
     let mut current_file = None;
 
     for line in reader.lines() {
@@ -56,7 +56,7 @@ fn group_consecutive_lines(lines: &Vec<u32>) -> Vec<Vec<u32>> {
     grouped_lines
 }
 
-fn convert_to_checkstyle_format(uncovered_files: HashMap<String, Vec<u32>>) -> Vec<u8> {
+fn convert_to_checkstyle_format(uncovered_files: BTreeMap<String, Vec<u32>>) -> Vec<u8> {
     let mut writer = Writer::new_with_indent(Vec::new(), b' ', 4);
     let mut checkstyle_start = BytesStart::new("checkstyle");
     checkstyle_start.push_attribute(("version", "4.3"));
