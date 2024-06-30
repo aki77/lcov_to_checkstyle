@@ -42,7 +42,7 @@ fn parse_lcov(file_path: &str) -> Result<BTreeMap<String, LcovRecord>> {
             let block_number: u32 = parts[1].parse().unwrap();
             let branch_number: u32 = parts[2].parse().unwrap();
             let taken: i32 = parts[3].parse().unwrap_or(-1);
-            if taken == 0 {
+            if taken == -1 {
                 if let Some(file) = &current_file {
                     uncovered_files
                         .entry(file.clone())
@@ -119,7 +119,10 @@ fn convert_to_checkstyle_format(uncovered_files: BTreeMap<String, LcovRecord>) -
         }
 
         for (line, branches) in &record.branches {
-            let uncovered_branches = branches.iter().filter(|&&(_, _, taken)| taken == 0).count();
+            let uncovered_branches = branches
+                .iter()
+                .filter(|&&(_, _, taken)| taken == -1)
+                .count();
             if uncovered_branches > 0 {
                 let message = format!(
                     "Line {} has {} uncovered branches",
