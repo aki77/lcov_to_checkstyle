@@ -5,10 +5,15 @@ use std::env;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 
-fn parse_lcov(file_path: &str) -> Result<BTreeMap<String, Vec<u32>>> {
+struct LcovRecord {
+    lines: Vec<u32>,
+    branches: BTreeMap<u32, Vec<(u32, u32, i32)>>,
+}
+
+fn parse_lcov(file_path: &str) -> Result<BTreeMap<String, LcovRecord>> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
-    let mut uncovered_files: BTreeMap<String, Vec<u32>> = BTreeMap::new();
+    let mut uncovered_files: BTreeMap<String, LcovRecord> = BTreeMap::new();
     let mut current_file = None;
 
     for line in reader.lines() {
@@ -23,14 +28,38 @@ fn parse_lcov(file_path: &str) -> Result<BTreeMap<String, Vec<u32>>> {
                 if let Some(file) = &current_file {
                     uncovered_files
                         .entry(file.clone())
-                        .or_insert_with(Vec::new)
+                        .or_insert_with(|| LcovRecord {
+                            lines: Vec::new(),
+                            branches: BTreeMap::new(),
+                        })
+                        .lines
                         .push(line_number);
+                }
+            }
+        } else if line.starts_with("BRDA:") {
+            let parts: Vec<&str> = line[5..].split(',').collect();
+            let line_number: u32 = parts[0].parse().unwrap();
+            let block_number: u32 = parts[1].parse().unwrap();
+            let branch_number: u32 = parts[2].parse().unwrap();
+            let taken: i32 = parts[3].parse().unwrap_or(-1);
+            if taken == 0 {
+                if let Some(file) = &current_file {
+                    uncovered_files
+                        .entry(file.clone())
+                        .or_insert_with(|| LcovRecord {
+                            lines: Vec::new(),
+                            branches: BTreeMap::new(),
+                        })
+                        .branches
+                        .entry(line_number)
+                        .or_insert_with(Vec::new)
+                        .push((block_number, branch_number, taken));
                 }
             }
         }
     }
 
-    uncovered_files.retain(|_, lines| !lines.is_empty());
+    uncovered_files.retain(|_, record| !record.lines.is_empty() || !record.branches.is_empty());
     Ok(uncovered_files)
 }
 
@@ -56,22 +85,26 @@ fn group_consecutive_lines(lines: &Vec<u32>) -> Vec<Vec<u32>> {
     grouped_lines
 }
 
-fn convert_to_checkstyle_format(uncovered_files: BTreeMap<String, Vec<u32>>) -> Vec<u8> {
+fn convert_to_checkstyle_format(uncovered_files: BTreeMap<String, LcovRecord>) -> Vec<u8> {
     let mut writer = Writer::new_with_indent(Vec::new(), b' ', 4);
     let mut checkstyle_start = BytesStart::new("checkstyle");
     checkstyle_start.push_attribute(("version", "4.3"));
     writer.write_event(Event::Start(checkstyle_start)).unwrap();
 
-    for (file, lines) in uncovered_files {
+    for (file, record) in uncovered_files {
         let mut file_start = BytesStart::new("file");
         file_start.push_attribute(("name", file.as_str()));
         writer.write_event(Event::Start(file_start)).unwrap();
 
-        let grouped_lines = group_consecutive_lines(&lines);
+        let grouped_lines = group_consecutive_lines(&record.lines);
 
         for group in grouped_lines {
             let message = if group.len() > 1 {
-                format!("Lines {}-{} are not covered", group[0], group[group.len() - 1])
+                format!(
+                    "Lines {}-{} are not covered",
+                    group[0],
+                    group[group.len() - 1]
+                )
             } else {
                 format!("Line {} is not covered", group[0])
             };
@@ -85,10 +118,31 @@ fn convert_to_checkstyle_format(uncovered_files: BTreeMap<String, Vec<u32>>) -> 
             writer.write_event(Event::Empty(error_start)).unwrap();
         }
 
-        writer.write_event(Event::End(BytesEnd::new("file"))).unwrap();
+        for (line, branches) in &record.branches {
+            let uncovered_branches = branches.iter().filter(|&&(_, _, taken)| taken == 0).count();
+            if uncovered_branches > 0 {
+                let message = format!(
+                    "Line {} has {} uncovered branches",
+                    line, uncovered_branches
+                );
+
+                let mut error_start = BytesStart::new("error");
+                error_start.push_attribute(("line", line.to_string().as_str()));
+                error_start.push_attribute(("severity", "warning"));
+                error_start.push_attribute(("message", message.as_str()));
+                error_start.push_attribute(("source", "coverage"));
+                writer.write_event(Event::Empty(error_start)).unwrap();
+            }
+        }
+
+        writer
+            .write_event(Event::End(BytesEnd::new("file")))
+            .unwrap();
     }
 
-    writer.write_event(Event::End(BytesEnd::new("checkstyle"))).unwrap();
+    writer
+        .write_event(Event::End(BytesEnd::new("checkstyle")))
+        .unwrap();
     writer.into_inner()
 }
 

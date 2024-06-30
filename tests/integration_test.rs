@@ -18,10 +18,14 @@ fn test_lcov_parsing_and_output() {
     <file name="/path/to/project/src/lib.rs">
         <error line="3" severity="warning" message="Lines 2-3 are not covered" source="coverage"/>
         <error line="6" severity="warning" message="Line 6 is not covered" source="coverage"/>
+        <error line="2" severity="warning" message="Line 2 has 2 uncovered branches" source="coverage"/>
+        <error line="6" severity="warning" message="Line 6 has 1 uncovered branches" source="coverage"/>
     </file>
     <file name="/path/to/project/src/main.rs">
         <error line="4" severity="warning" message="Lines 3-4 are not covered" source="coverage"/>
         <error line="7" severity="warning" message="Line 7 is not covered" source="coverage"/>
+        <error line="3" severity="warning" message="Line 3 has 2 uncovered branches" source="coverage"/>
+        <error line="7" severity="warning" message="Line 7 has 1 uncovered branches" source="coverage"/>
     </file>
 </checkstyle>
 "#;
