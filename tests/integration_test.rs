@@ -15,13 +15,13 @@ fn test_lcov_parsing_and_output() {
 
     let expected_output = r#"
 <checkstyle version="4.3">
-    <file name="/path/to/project/src/main.rs">
-        <error line="4" severity="warning" message="Lines 3-4 are not covered" source="coverage"/>
-        <error line="7" severity="warning" message="Line 7 is not covered" source="coverage"/>
-    </file>
     <file name="/path/to/project/src/lib.rs">
         <error line="3" severity="warning" message="Lines 2-3 are not covered" source="coverage"/>
         <error line="6" severity="warning" message="Line 6 is not covered" source="coverage"/>
+    </file>
+    <file name="/path/to/project/src/main.rs">
+        <error line="4" severity="warning" message="Lines 3-4 are not covered" source="coverage"/>
+        <error line="7" severity="warning" message="Line 7 is not covered" source="coverage"/>
     </file>
 </checkstyle>
 "#;
