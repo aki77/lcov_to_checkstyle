@@ -31,7 +31,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/${{ matrix.target }}/release/lcov_to_checkstyle
-          asset_name: lcov_to_checkstyle-${{ matrix.target }}
+          file: target/${{ matrix.target }}/release/lcov_to_checkstyle${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
+          asset_name: lcov_to_checkstyle-${{ matrix.target }}${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
           tag: ${{ github.ref }}
           overwrite: true
