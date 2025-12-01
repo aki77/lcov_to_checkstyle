@@ -19,7 +19,7 @@ jobs:
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Compile and release
         uses: houseabsolute/actions-rust-cross@v1
         with:
