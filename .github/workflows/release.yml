@@ -41,7 +41,7 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  # Immutable releases では公開後にアセットを追加できないため、全アセットを揃えてからリリースを作成する
+  # Immutable releases do not allow adding assets after publishing, so create the release only after all assets are built
   release:
     needs: build
     runs-on: ubuntu-latest
