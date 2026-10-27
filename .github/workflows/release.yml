@@ -1,13 +1,14 @@
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - "v*"
 
 jobs:
-  release:
-    name: release ${{ matrix.target }}
+  build:
+    name: build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - target: x86_64-apple-darwin
@@ -18,20 +19,40 @@ jobs:
             os: ubuntu-latest
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
+    env:
+      EXT: ${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
     steps:
       - uses: actions/checkout@v7
-      - name: Compile and release
+      - name: Compile
         uses: houseabsolute/actions-rust-cross@v1
         with:
           command: build
           target: ${{ matrix.target }}
           args: "--locked --release"
           strip: true
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Rename binary
+        run: |
+          mkdir dist
+          cp target/${{ matrix.target }}/release/lcov_to_checkstyle${EXT} dist/lcov_to_checkstyle-${{ matrix.target }}${EXT}
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/${{ matrix.target }}/release/lcov_to_checkstyle${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
-          asset_name: lcov_to_checkstyle-${{ matrix.target }}${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
-          tag: ${{ github.ref }}
-          overwrite: true
+          name: lcov_to_checkstyle-${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+
+  # Immutable releases do not allow adding assets after publishing, so create the release only after all assets are built
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --generate-notes dist/*
