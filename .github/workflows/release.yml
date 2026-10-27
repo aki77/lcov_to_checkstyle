@@ -13,14 +13,10 @@ jobs:
         include:
           - target: x86_64-apple-darwin
             os: macos-latest
-          - target: x86_64-pc-windows-gnu
-            os: ubuntu-latest
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
-    env:
-      EXT: ${{ matrix.target == 'x86_64-pc-windows-gnu' && '.exe' || '' }}
     steps:
       - uses: actions/checkout@v7
       - name: Compile
@@ -33,7 +29,7 @@ jobs:
       - name: Rename binary
         run: |
           mkdir dist
-          cp target/${{ matrix.target }}/release/lcov_to_checkstyle${EXT} dist/lcov_to_checkstyle-${{ matrix.target }}${EXT}
+          cp target/${{ matrix.target }}/release/lcov_to_checkstyle dist/lcov_to_checkstyle-${{ matrix.target }}
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
